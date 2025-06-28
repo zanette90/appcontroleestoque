@@ -4,4 +4,3 @@ const sequelize = new Sequelize('controleEstoqueSenac', 'root', 'n9b8aa92', {
     dialect: 'mysql',
 });
 module.exports = sequelize;
-//npm install mysql2

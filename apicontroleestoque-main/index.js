@@ -28,9 +28,6 @@ app.use("/usuarios", usuarioRoutes);
 app.use("/estoques", autenticarToken, estoqueRoutes);
 app.use("/produtos", autenticarToken, produtoRoutes);
 
-//app.use("/produtos", require("./routes/produto.routes"));
-//app.use("/usuarios", require("./routes/usuario.routes"));
-//app.use("/estoques", require("./routes/estoque.routes"));
 
 app.listen(port, () => {
     console.log(`Servidor rodando em http://localhost:${port}`);

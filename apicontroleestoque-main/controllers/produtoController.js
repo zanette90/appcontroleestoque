@@ -1,4 +1,3 @@
-//const Produto = require("../models/Produto");
 const { Produto } = require("../models");
 
 async function listarTodosProdutos(req, res) {
