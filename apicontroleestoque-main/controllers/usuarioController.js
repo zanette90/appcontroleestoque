@@ -13,8 +13,8 @@ async function logarUsuario(req, res) {
 
     const usuario = await Usuario.findOne({ where: { email } });
 
-    if (!usuario) {
-      return res.status(404).json({ erro: "Usuário não encontrado" });
+    if (!usuario || !usuario.ativo) {
+      return res.status(404).json({ erro: "Usuário não encontrado ou inativo" });
     }
 
     const senhaValida = await bcrypt.compare(senha, usuario.senha); 
@@ -38,7 +38,9 @@ async function logarUsuario(req, res) {
     return res.status(200).json({
       message: "Usuário autenticado com sucesso",
       token,
-      data: usuarioSeguro,
+      nome: usuarioSeguro.nome,
+      id: usuarioSeguro.id,
+      permissao: usuarioSeguro.permissao
     });
 
   } catch (err) {
@@ -48,25 +50,25 @@ async function logarUsuario(req, res) {
 }
 
 async function criarUsuario(req, res) {
-    const { email } = req.body;
+    const email = req.body.email;
+    console.log(req.body);
     try {
         const usuario = await Usuario.findOne({ where: { email } });
         
         if (usuario) {
             return res.status(409).json({ erro: "Usuário já cadastrado" });
         }
-
+        
         req.body.senha = await bcrypt.hash(req.body.senha, 10);
         const novoUsuario = await Usuario.create(req.body);
         const { senha, ...usuarioSeguro } = novoUsuario.toJSON();
-
         res.status(201).json({
             message: "Usuário criado com sucesso!",
             data: usuarioSeguro
         });
     } catch (error) {
         
-        res.status(500).json({ error: "Erro ao criar o usuário." });
+        res.status(500).json({ error: "Erro ao criar o usuário.", error });
     }
 }
 
@@ -156,7 +158,7 @@ async function inativarUsuario(req, res) {
             return res.status(404).json({ error: "Usuário não encontrado." });
         }
 
-        usuario.ativo = false;
+        usuario.ativo = !usuario.ativo;
         await usuario.save();
         res.status(200).json({ message: "Usuário inativado com sucesso!" });
     } catch (error) {

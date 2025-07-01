@@ -1,3 +1,4 @@
+const { FLOAT } = require("sequelize");
 const { Produto } = require("../models");
 
 async function listarTodosProdutos(req, res) {
@@ -30,13 +31,14 @@ async function listarProdutoPorId(req, res) {
 
 async function criarProduto(req, res) {
     try {
-        const { nome, descricao, quantidadeMinima } = req.body;
-
-        if (!nome || !descricao || !Number.isInteger(quantidadeMinima)) {
+        const { descricao, preco, quantidadeMinima, ativo } = req.body;
+        console.log(req.body);
+        if (!descricao || !Number.isInteger(quantidadeMinima) || isNaN(preco)) {
             return res.status(400).json({ error: "Dados inválidos." });
         }
 
         const novoProduto = await Produto.create(req.body);
+
         res.status(201).json({ message: "Produto criado com sucesso!", data: novoProduto });
     } catch (error) {
         console.error(error);
@@ -47,13 +49,14 @@ async function criarProduto(req, res) {
 async function atualizarProduto(req, res) {
     try {
         const id = Number(req.params.id);
-        const { nome, descricao, quantidadeMinima } = req.body;
+        const {descricao, quantidadeMinima, preco, ativo } = req.body;
 
-        if (isNaN(id)) return res.status(400).json({ error: "ID inválido." });
-        if (!nome || !descricao || !Number.isInteger(quantidadeMinima)) {
+        if (!descricao || !Number.isInteger(quantidadeMinima) || !preco) {
             return res.status(400).json({ error: "Dados inválidos." });
         }
 
+        console.log(req.body);
+        
         const produto = await Produto.findByPk(id);
         if (!produto) return res.status(404).json({ error: "Produto não encontrado." });
 
@@ -67,13 +70,12 @@ async function atualizarProduto(req, res) {
 
 async function inativarProduto(req, res) {
     try {
-        const id = Number(req.params.id);
-        if (isNaN(id)) return res.status(400).json({ error: "ID inválido." });
-
+        const id = parseInt(req.params.id);
         const produto = await Produto.findByPk(id);
         if (!produto) return res.status(404).json({ error: "Produto não encontrado." });
 
-        produto.ativo = false;
+
+        produto.ativo = !produto.ativo;
         await produto.save();
 
         res.status(200).json({ message: "Produto inativado com sucesso!" });
@@ -83,23 +85,6 @@ async function inativarProduto(req, res) {
     }
 }
 
-async function ativarProduto(req, res) {
-    try {
-        const id = Number(req.params.id);
-        if (isNaN(id)) return res.status(400).json({ error: "ID inválido." });
-
-        const produto = await Produto.findByPk(id);
-        if (!produto) return res.status(404).json({ error: "Produto não encontrado." });
-
-        produto.ativo = true;
-        await produto.save();
-
-        res.status(200).json({ message: "Produto ativado com sucesso!" });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Erro ao ativar produto." });
-    }
-}
 
 module.exports = {
     listarTodosProdutos,
@@ -107,5 +92,4 @@ module.exports = {
     criarProduto,
     atualizarProduto,
     inativarProduto,
-    ativarProduto
 };
